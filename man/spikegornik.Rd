@@ -4,10 +4,13 @@
 \alias{spikegornik}
 \title{Despike ADV data using the GoringNikora phase-space procedure}
 \usage{
-spikegornik(dt, plotting = TRUE, plotwin = c(1, nrow(dt)))
+spikegornik(fpath, outpath = NULL, plotting = TRUE, plotwin = c(1,
+  nrow(dt)))
 }
 \arguments{
-\item{dt}{data.frame ADV output where the column of interest is named "Speed"}
+\item{fpath}{file.path to ADV output where the column of interest is named "Speed"}
+
+\item{outpath}{file.path to save results. optional.}
 
 \item{plotting}{logical output progress to plots?}
 

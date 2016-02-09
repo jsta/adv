@@ -2,7 +2,8 @@
 #'@title Despike ADV data using the GoringNikora phase-space procedure
 #'@description Despike ADV data
 #'@author Joseph Stachelek
-#'@param dt data.frame ADV output where the column of interest is named "Speed"
+#'@param fpath file.path to ADV output where the column of interest is named "Speed"
+#'@param outpath file.path to save results. optional.
 #'@param plotting logical output progress to plots?
 #'@param plotwin numeric vector of length 2 specifying the plotting window
 #'@details This function is nearly a direct translation of the MacVicar et al. (2014) SpikeGoringNikora.m script from MATLAB to R. Single value spikes are not removed if they are the same as a linear interpolation between adjacent points. Remove measurements where the SNR > 5 per the ADV manual?
@@ -37,8 +38,9 @@
 #' main = "Z5_1 Despiked", ylab = "Speed", xlab = "")
 #'}
 
-spikegornik<-function(dt, plotting = TRUE, plotwin = c(1, nrow(dt))){
+spikegornik <- function(fpath, outpath = NULL, plotting = TRUE, plotwin = c(1, nrow(dt))){
   
+	dt <- read.table(fpath, header = TRUE)
   speed <- data.frame(dt[, "Speed"])
   names(speed) <- "speed"
   univmult <- sqrt(log(nrow(speed)))
@@ -95,7 +97,7 @@ spikegornik<-function(dt, plotting = TRUE, plotwin = c(1, nrow(dt))){
     
     speed[,1] <- spikereplace(as.numeric(min_of_not_spike == 0), speed[,1])
     
-    plot(speed[plotwin[1]:plotwin[2],1] , t="l")
+    plot(speed[plotwin[1]:plotwin[2],1] , t = "l")
   
   spike <- min(sum(as.numeric(min_of_not_spike == 0)), (maxcounter - counter))
   print(paste("spikes:", sum(as.numeric(min_of_not_spike == 0))))
@@ -103,10 +105,15 @@ spikegornik<-function(dt, plotting = TRUE, plotwin = c(1, nrow(dt))){
   counter <- counter + 1
   }
   
-  datetime <- as.POSIXct(paste(dt[,"Year"], "-", dt[,"Month"], "-", dt[,"Day"], " ", dt[,"Hour"], ":", dt[,"Minute"], ":", dt[,"Second"], sep=""))
+  datetime <- as.POSIXct(paste(dt[,"Year"], "-", dt[,"Month"], "-", dt[,"Day"], " ", dt[,"Hour"], ":", dt[,"Minute"], ":", dt[,"Second"], sep = ""))
   
   res <- cbind(datetime,data.frame(speed[,1]))
   names(res) <- c("datetime", "speed")
+  
+  if(length(outpath) > 0){
+  	write.csv(res, outpath, row.names = FALSE)
+  }
+  
   res
 }
 
@@ -117,47 +124,48 @@ spikegornik<-function(dt, plotting = TRUE, plotwin = c(1, nrow(dt))){
 #'@param ydat numeric?
 #'@param xellipse numeric?
 #'@param yellipse numeric?
+#'@export
 #'@examples \dontrun{
 #'xellipse<-x
 #'yellipse<-y
 #'xdat<-speed[,a]
 #'ydat<-speed[,b]
 #'}
-inellipse<-function(xdat,ydat,xellipse,yellipse){
-  is_yes<-matrix(0,length(xdat))
+inellipse <- function(xdat, ydat, xellipse, yellipse){
+  is_yes <- matrix(0, length(xdat))
 
-  cart2pol<-function(x,y){
-    rho<-sqrt(((x^2)+(y^2)))
-    theta<-atan2(y,x)
-    c(theta,rho)
+  cart2pol <- function(x, y){
+    rho <- sqrt(((x^2) + (y^2)))
+    theta <- atan2(y, x)
+    c(theta, rho)
   }
   
-  rangellipse<-t(apply(cbind(xellipse,yellipse),1,function(x) cart2pol(x[1],x[2])))
+  rangellipse <-t(apply(cbind(xellipse, yellipse), 1, function(x) cart2pol(x[1], x[2])))
   
-  rellipse<-rangellipse[1:(nrow(rangellipse)-1),2]
-  angellipse<-rangellipse[1:(nrow(rangellipse)-1),1]
-  order_of_angellipse<-order(angellipse)
-  angellipse<-angellipse[order_of_angellipse]
-  rellipse<-rellipse[order_of_angellipse]
+  rellipse <- rangellipse[1:(nrow(rangellipse) - 1), 2]
+  angellipse <- rangellipse[1:(nrow(rangellipse) - 1), 1]
+  order_of_angellipse <- order(angellipse)
+  angellipse <- angellipse[order_of_angellipse]
+  rellipse <- rellipse[order_of_angellipse]
   
-  angellipse<-c((angellipse[length(angellipse)])-(2*pi),angellipse)
-  rellipse<-c(rellipse[length(rellipse)],rellipse)
-  ravgellipse<-rellipse[1:(length(rellipse)-1)]+(diff(rellipse)/2)
+  angellipse <- c((angellipse[length(angellipse)]) - (2 * pi), angellipse)
+  rellipse <- c(rellipse[length(rellipse)], rellipse)
+  ravgellipse <- rellipse[1:(length(rellipse) - 1)] + (diff(rellipse) / 2)
   
-  rangdat<-t(apply(cbind(xdat,ydat),1,function(x) cart2pol(x[1],x[2])))
-  angdat<-rangdat[,1]
-  rdat<-rangdat[,2]
+  rangdat <- t(apply(cbind(xdat, ydat), 1, function(x) cart2pol(x[1], x[2])))
+  angdat <- rangdat[,1]
+  rdat <- rangdat[,2]
   
-  n<-hist(angdat, breaks=angellipse, plot = FALSE)$counts
-  angidx<-findInterval(angdat, angellipse)
-  nogoo<-which(angidx == length(angellipse))
+  n <- hist(angdat, breaks = angellipse, plot = FALSE)$counts
+  angidx <- findInterval(angdat, angellipse)
+  nogoo <- which(angidx == length(angellipse))
   angidx[nogoo] <- 1
   angmem <- unique(angidx)[order(unique(angidx))]
   
-  natot<-length(angmem)
+  natot <- length(angmem)
   for(na in 1:natot){
-    goo<-which(angidx==angmem[na])
-      is_yes[goo] <- as.numeric(rdat[goo]<=ravgellipse[angmem[na]])
+    goo <- which(angidx == angmem[na])
+      is_yes[goo] <- as.numeric(rdat[goo] <= ravgellipse[angmem[na]])
   }
   return(is_yes)
 }
@@ -168,36 +176,36 @@ inellipse<-function(xdat,ydat,xellipse,yellipse){
 #'@param is_spike logical
 #'@param sp numeric?
 #'@import zoo
-spikereplace <- function(is_spike,sp){
-  res<-sp
-  spikes<-which(diff(is_spike)>0)
-  spikee<-which(diff(is_spike)<0)
+spikereplace <- function(is_spike, sp){
+  res <- sp
+  spikes <- which(diff(is_spike) > 0)
+  spikee <- which(diff(is_spike) < 0)
   
-  if(length(spikes)==0){
-    spikee<-NA
+  if(length(spikes) == 0){
+    spikee <- NA
   }
-  if(length(spikee)==0){
-    spikes<-NA
+  if(length(spikee) == 0){
+    spikes <- NA
   }
   
-  if(length(spikes)!=0 || length(spikee)!=0){
-    if(spikee[1]<spikes[1]){
-      spikee<-spikee[-1]
+  if(length(spikes) != 0 || length(spikee) != 0){
+    if(spikee[1] < spikes[1]){
+      spikee <- spikee[-1]
     }
-    if(length(spikee)!=0){
-      if(spikes[length(spikes)]>spikee[length(spikee)]){
-        spikes<-spikes[-length(spikes)]
+    if(length(spikee) != 0){
+      if(spikes[length(spikes)] > spikee[length(spikee)]){
+        spikes <- spikes[-length(spikes)]
       }
     }else{
-      spikes<-NA
+      spikes <- NA
     }
   }
   
   #replace spikes
-  spiketot<-length(spikes)
+  spiketot <- length(spikes)
   for(snum in 1:spiketot){
     #snum<-1
-    res[(spikes[snum]+1):spikee[snum]]<-NA
+    res[(spikes[snum] + 1):spikee[snum]] <- NA
     res <- zoo::na.approx(res)
   }
   res
