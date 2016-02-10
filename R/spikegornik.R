@@ -4,6 +4,7 @@
 #'@author Joseph Stachelek
 #'@param fpath file.path to ADV output where the column of interest is named "Speed"
 #'@param outpath file.path to save results. optional.
+#'@param maxcounter numeric number of smoothing passes
 #'@param plotting logical output progress to plots?
 #'@param plotwin numeric vector of length 2 specifying the plotting window
 #'@details This function is nearly a direct translation of the MacVicar et al. (2014) SpikeGoringNikora.m script from MATLAB to R. Single value spikes are not removed if they are the same as a linear interpolation between adjacent points. Remove measurements where the SNR > 5 per the ADV manual?
@@ -12,8 +13,13 @@
 #'@export
 #'@examples \dontrun{
 #'#Newman test files
-#'dt <- read.table("Z5_3_R3222001.dat", header = TRUE)
-#'res <- spikegornik(dt, plotwin = c(nrow(dt)-200, nrow(dt)))
+#'fpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.dat"
+#'outpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.csv"
+#'res <- spikegornik(fpath)
+#'res <- spikegornik(fpath, outpath)
+#'res <- spikegornik(fpath, outpath, plotwin = c(nrow(dt)-200, nrow(dt)))
+#' plot(res, type = "l")
+#' 
 #'plot(dt[(nrow(dt)-200):nrow(dt), "SNR3"], type ="l")
 #'plot(dt[(nrow(dt)-200):nrow(dt), "Speed"], type ="l")
 #'
@@ -38,7 +44,7 @@
 #' main = "Z5_1 Despiked", ylab = "Speed", xlab = "")
 #'}
 
-spikegornik <- function(fpath, outpath = NULL, plotting = TRUE, plotwin = c(1, nrow(dt))){
+spikegornik <- function(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE, plotwin = c(1, nrow(dt))){
   
 	dt <- read.table(fpath, header = TRUE)
   speed <- data.frame(dt[, "Speed"])
@@ -51,7 +57,6 @@ spikegornik <- function(fpath, outpath = NULL, plotting = TRUE, plotwin = c(1, n
   
   spike <- 1
   counter <- 0
-  maxcounter <- 5
     
   while(spike > 0){
   
@@ -107,8 +112,8 @@ spikegornik <- function(fpath, outpath = NULL, plotting = TRUE, plotwin = c(1, n
   
   datetime <- as.POSIXct(paste(dt[,"Year"], "-", dt[,"Month"], "-", dt[,"Day"], " ", dt[,"Hour"], ":", dt[,"Minute"], ":", dt[,"Second"], sep = ""))
   
-  res <- cbind(datetime,data.frame(speed[,1]))
-  names(res) <- c("datetime", "speed")
+  res <- cbind(datetime,data.frame(speed[,1]), dt$Speed, dt$SNR1, dt$SNR2, dt$SNR3)
+  names(res) <- c("datetime", "speed", "speed_raw", "snr1", "snr2", "snr3")
   
   if(length(outpath) > 0){
   	write.csv(res, outpath, row.names = FALSE)
