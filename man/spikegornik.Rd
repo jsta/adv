@@ -4,13 +4,15 @@
 \alias{spikegornik}
 \title{Despike ADV data using the GoringNikora phase-space procedure}
 \usage{
-spikegornik(fpath, outpath = NULL, plotting = TRUE, plotwin = c(1,
-  nrow(dt)))
+spikegornik(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE,
+  plotwin = c(1, nrow(dt)))
 }
 \arguments{
 \item{fpath}{file.path to ADV output where the column of interest is named "Speed"}
 
 \item{outpath}{file.path to save results. optional.}
+
+\item{maxcounter}{numeric number of smoothing passes}
 
 \item{plotting}{logical output progress to plots?}
 
@@ -28,8 +30,13 @@ This function is nearly a direct translation of the MacVicar et al. (2014) Spike
 \examples{
 \dontrun{
 #Newman test files
-dt <- read.table("Z5_3_R3222001.dat", header = TRUE)
-res <- spikegornik(dt, plotwin = c(nrow(dt)-200, nrow(dt)))
+fpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.dat"
+outpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.csv"
+res <- spikegornik(fpath)
+res <- spikegornik(fpath, outpath)
+res <- spikegornik(fpath, outpath, plotwin = c(nrow(dt)-200, nrow(dt)))
+plot(res, type = "l")
+
 plot(dt[(nrow(dt)-200):nrow(dt), "SNR3"], type ="l")
 plot(dt[(nrow(dt)-200):nrow(dt), "Speed"], type ="l")
 
