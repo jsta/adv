@@ -7,9 +7,9 @@
 spikereplace(is_spike, sp)
 }
 \arguments{
-\item{is_spike}{logical}
+\item{is_spike}{numeric vector of data length}
 
-\item{sp}{numeric?}
+\item{sp}{numeric vector of raw data}
 }
 \description{
 Replaces spikes

@@ -2,7 +2,7 @@
 #  library(adv)
 #  
 #  flist <- list.files("../inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.csv")[3:6]
-#  #flist <- list.files("inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.dat")[3:6]
+#  #flist <- list.files("inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.csv")[3:6]
 #  
 #  dt <- lapply(flist, function(x) read.csv(x, header = TRUE, stringsAsFactors = FALSE))
 #  

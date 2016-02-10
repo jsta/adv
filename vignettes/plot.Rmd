@@ -11,11 +11,11 @@ vignette: >
 
 ## Figures
 
-```{r, eval=TRUE, echo=FALSE, fig.align='center',fig.width=7, fig.height=4}
+```{r, eval=TRUE, echo=FALSE, fig.align='center',fig.width=7, fig.height=4, warning=FALSE}
 library(adv)
 
 flist <- list.files("../inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.csv")[3:6]
-#flist <- list.files("inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.dat")[3:6]
+#flist <- list.files("inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.csv")[3:6]
 
 dt <- lapply(flist, function(x) read.csv(x, header = TRUE, stringsAsFactors = FALSE))
 
@@ -26,6 +26,12 @@ dtnames <- do.call(c, dtnames)
 dt <- do.call(rbind, dt)
 dt$site <- dtnames
 dt$datetime <- as.POSIXct(dt$datetime)
+
+dt$spikes <- as.POSIXct(dt$spikes, origin = "1970-01-01")
+dt[!is.na(dt$spikes),"spikes"] <- as.POSIXct(dt[!is.na(dt$spikes),"datetime"])
+
+dt$speed_highsnr <- dt$speed
+dt[dt$snr_mean < 5, "speed_highsnr"] <- NA
 
 library(ggplot2)
 theme_opts <- list(ggplot2::theme(
@@ -46,7 +52,13 @@ theme_opts <- list(ggplot2::theme(
 
 gg <- ggplot(dt, aes(x = datetime, y = speed, colour = site))
 gg <- gg + geom_line(alpha = 0.8)
-gg <- gg + theme_opts + ggplot2::ylab("Speed") + viridis::scale_color_viridis(discrete = TRUE) + scale_x_datetime(date_breaks = "1 week", date_labels = "%m-%d")
+gg <- gg + geom_point(aes(x = spikes, y = 35))
+gg <- gg + theme_opts + ggplot2::ylab("Speed Low SNR \n Points Indicate Spike Positions") + viridis::scale_color_viridis(discrete = TRUE) + scale_x_datetime(date_breaks = "1 week", date_labels = "%m-%d")
+gg + facet_grid(site~.)
+
+gg <- ggplot(dt, aes(x = datetime, y = speed_highsnr, colour = site))
+gg <- gg + geom_line(alpha = 0.8)
+gg <- gg + theme_opts + ggplot2::ylab("Speed High SNR") + viridis::scale_color_viridis(discrete = TRUE) + scale_x_datetime(date_breaks = "1 week", date_labels = "%m-%d")
 gg + facet_grid(site~.)
 
 gg <- ggplot(dt, aes(x = datetime, y = speed_raw, colour = site))

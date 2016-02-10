@@ -23,11 +23,12 @@ spikegornik <- function(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE, 
   
 	dt <- read.table(fpath, header = TRUE)
   speed <- data.frame(dt[, "Speed"])
-  names(speed) <- "speed"
+  names(speed) <- c("speed")
+  spike_pos <- data.frame(spike = rep(NA, nrow(speed)))
+  
   univmult <- sqrt(log(nrow(speed)))
   univthresh <- univmult * (2 * log(nrow(speed)))^0.5       
   sig <- seq(from = 0, to = (2 * pi), by=(2 * pi/144))
-  
   not_spike <- matrix(0, nrow = nrow(speed), ncol = 3)
   
   spike <- 1
@@ -48,7 +49,7 @@ spikegornik <- function(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE, 
   
   #step 3===================================================#
     theta <- c(0, 0, atan(sum(speed[,1] * speed[,3]) / sum(speed[,1]^2)))
-  
+    
   #step 4===================================================#
     xa <- c(1, 2, 1)
     ya <- c(2, 3, 3)
@@ -63,32 +64,34 @@ spikegornik <- function(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE, 
       a <- xa[fg]
       b <- ya[fg]
     
-      r <- ((speedmax[a]^2 * speedmax[b]^2)/(speedmax[a]^2 * (sin(sig))^2+speedmax[b]^2 * (cos(sig))^2))^0.5
+      r <- ((speedmax[a]^2 * speedmax[b]^2)/(speedmax[a]^2 * (sin(sig))^2 + speedmax[b]^2 * (cos(sig))^2))^0.5
     
       xy <- t(apply(cbind(sig, r), 1, function(x) pol2cart(x[1], x[2])))
       x <- xy[,1] * cos(theta[fg]) - xy[,2] * sin(theta[fg])
       y <- xy[,2] * cos(theta[fg]) + xy[,1] * sin(theta[fg])
-      
+ 
       not_spike[,fg] <- inellipse(speed[,a], speed[,b], x, y)
     }
-  
+  	
     min_of_not_spike <- apply(not_spike, 1, min)
     plot(speed[plotwin[1]:plotwin[2],1], t = "l")
     
-    speed[,1] <- spikereplace(as.numeric(min_of_not_spike == 0), speed[,1])
+    res_spikereplace <- spikereplace(as.numeric(min_of_not_spike == 0), speed[,1])
+    speed[,1] <- res_spikereplace$res
+    spike_pos[res_spikereplace$spikes, 1] <- res_spikereplace$spikes
     
-    plot(speed[plotwin[1]:plotwin[2],1] , t = "l")
+    plot(speed[plotwin[1]:plotwin[2] ,1] , t = "l")
   
-  spike <- min(sum(as.numeric(min_of_not_spike == 0)), (maxcounter - counter))
-  print(paste("spikes:", sum(as.numeric(min_of_not_spike == 0))))
-  print(paste("counter at:", counter))
-  counter <- counter + 1
+  	spike <- min(sum(as.numeric(min_of_not_spike == 0)), (maxcounter - counter))
+  	print(paste("spikes:", sum(as.numeric(min_of_not_spike == 0))))
+  	print(paste("counter at:", counter))
+  	counter <- counter + 1
   }
   
   datetime <- as.POSIXct(paste(dt[,"Year"], "-", dt[,"Month"], "-", dt[,"Day"], " ", dt[,"Hour"], ":", dt[,"Minute"], ":", dt[,"Second"], sep = ""))
-  
-  res <- cbind(datetime,data.frame(speed[,1]), dt$Speed, rowMeans(cbind( dt$SNR1, dt$SNR2, dt$SNR3), na.rm = TRUE))
-  names(res) <- c("datetime", "speed", "speed_raw", "snr_mean")
+
+  res <- cbind(datetime,data.frame(speed[,1]), dt$Speed, rowMeans(cbind( dt$SNR1, dt$SNR2, dt$SNR3), na.rm = TRUE), spike_pos[,1])
+  names(res) <- c("datetime", "speed", "speed_raw", "snr_mean", "spikes")
   
   if(length(outpath) > 0){
   	write.csv(res, outpath, row.names = FALSE)
@@ -153,8 +156,8 @@ inellipse <- function(xdat, ydat, xellipse, yellipse){
 #'@name spikereplace
 #'@title Replace spikes
 #'@description Replaces spikes
-#'@param is_spike logical
-#'@param sp numeric?
+#'@param is_spike numeric vector of data length
+#'@param sp numeric vector of raw data
 #'@import zoo
 spikereplace <- function(is_spike, sp){
   res <- sp
@@ -184,9 +187,8 @@ spikereplace <- function(is_spike, sp){
   #replace spikes
   spiketot <- length(spikes)
   for(snum in 1:spiketot){
-    #snum<-1
     res[(spikes[snum] + 1):spikee[snum]] <- NA
     res <- zoo::na.approx(res)
   }
-  res
+  list(res = res, spikes = spikes)
 }
