@@ -29,36 +29,11 @@ This function is nearly a direct translation of the MacVicar et al. (2014) Spike
 }
 \examples{
 \dontrun{
-#Newman test files
 fpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.dat"
 outpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.csv"
 res <- spikegornik(fpath)
 res <- spikegornik(fpath, outpath)
-res <- spikegornik(fpath, outpath, plotwin = c(nrow(dt)-200, nrow(dt)))
 plot(res, type = "l")
-
-plot(dt[(nrow(dt)-200):nrow(dt), "SNR3"], type ="l")
-plot(dt[(nrow(dt)-200):nrow(dt), "Speed"], type ="l")
-
-par(mfrow = c(3, 1), mar = c(3, 3.9, 3, 1))
-plot(dt[,"Speed"],type="l",main="Z5_3 Raw",ylab="Speed",xlab="")
-plot(res[,"speed"], type = "l",ylim = c(0,max(dt[,"Speed"])),
-main = "Z5_3 Despiked", ylab = "Speed", xlab = "")
-plot(dt$SNR1, type = "l")
-abline(h = 5, col = "red")
-
-plot(dt[(nrow(dt)-200):nrow(dt),"Speed"],type="l",main="Z5_3 Raw",
-ylab="Speed",xlab="")
-plot(res[(nrow(res)-200):nrow(res),"speed"], type = "l", 
-ylim = c(0,max(dt[,"Speed"])),main = "Z5_3 Despiked", ylab = "Speed", xlab = "")
-
-
-dt <- read.table("Z5_1_R321001.dat", header = TRUE)
-res <- spikegornik(dt, plotwin = c(nrow(dt)-200, nrow(dt)))
-plot(dt[,"Speed"], type = "l", main = "Z5_1 Raw", ylab = "Speed",
-xlab = "")
-plot(res[,"speed"], type="l", ylim = c(0, max(dt[,"Speed"])),
-main = "Z5_1 Despiked", ylab = "Speed", xlab = "")
 }
 }
 \author{

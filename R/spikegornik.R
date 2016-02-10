@@ -12,36 +12,11 @@
 #'@return data.frame datetime of class POSIXct and speed of class numeric
 #'@export
 #'@examples \dontrun{
-#'#Newman test files
 #'fpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.dat"
 #'outpath <- "inst/extdata/2014-10-14_R322_001_Z5-3.csv"
 #'res <- spikegornik(fpath)
 #'res <- spikegornik(fpath, outpath)
-#'res <- spikegornik(fpath, outpath, plotwin = c(nrow(dt)-200, nrow(dt)))
 #' plot(res, type = "l")
-#' 
-#'plot(dt[(nrow(dt)-200):nrow(dt), "SNR3"], type ="l")
-#'plot(dt[(nrow(dt)-200):nrow(dt), "Speed"], type ="l")
-#'
-#'par(mfrow = c(3, 1), mar = c(3, 3.9, 3, 1))
-#'plot(dt[,"Speed"],type="l",main="Z5_3 Raw",ylab="Speed",xlab="")
-#'plot(res[,"speed"], type = "l",ylim = c(0,max(dt[,"Speed"])),
-#'main = "Z5_3 Despiked", ylab = "Speed", xlab = "")
-#'plot(dt$SNR1, type = "l")
-#'abline(h = 5, col = "red")
-#'
-#'plot(dt[(nrow(dt)-200):nrow(dt),"Speed"],type="l",main="Z5_3 Raw",
-#'ylab="Speed",xlab="")
-#'plot(res[(nrow(res)-200):nrow(res),"speed"], type = "l", 
-#'ylim = c(0,max(dt[,"Speed"])),main = "Z5_3 Despiked", ylab = "Speed", xlab = "")
-#'
-#'
-#'dt <- read.table("Z5_1_R321001.dat", header = TRUE)
-#'res <- spikegornik(dt, plotwin = c(nrow(dt)-200, nrow(dt)))
-#'plot(dt[,"Speed"], type = "l", main = "Z5_1 Raw", ylab = "Speed",
-#' xlab = "")
-#'plot(res[,"speed"], type="l", ylim = c(0, max(dt[,"Speed"])),
-#' main = "Z5_1 Despiked", ylab = "Speed", xlab = "")
 #'}
 
 spikegornik <- function(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE, plotwin = c(1, nrow(dt))){
@@ -112,8 +87,8 @@ spikegornik <- function(fpath, outpath = NULL, maxcounter = 5, plotting = TRUE, 
   
   datetime <- as.POSIXct(paste(dt[,"Year"], "-", dt[,"Month"], "-", dt[,"Day"], " ", dt[,"Hour"], ":", dt[,"Minute"], ":", dt[,"Second"], sep = ""))
   
-  res <- cbind(datetime,data.frame(speed[,1]), dt$Speed, dt$SNR1, dt$SNR2, dt$SNR3)
-  names(res) <- c("datetime", "speed", "speed_raw", "snr1", "snr2", "snr3")
+  res <- cbind(datetime,data.frame(speed[,1]), dt$Speed, rowMeans(cbind( dt$SNR1, dt$SNR2, dt$SNR3), na.rm = TRUE))
+  names(res) <- c("datetime", "speed", "speed_raw", "snr_mean")
   
   if(length(outpath) > 0){
   	write.csv(res, outpath, row.names = FALSE)

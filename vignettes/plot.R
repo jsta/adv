@@ -1,7 +1,7 @@
-## ---- eval=FALSE---------------------------------------------------------
+## ---- eval=FALSE, echo=FALSE, fig.align='center',fig.width=7, fig.height=4----
 #  library(adv)
 #  
-#  flist <- list.files("inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.csv")[3:6]
+#  flist <- list.files("../inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.csv")[3:6]
 #  #flist <- list.files("inst/extdata", include.dirs = TRUE, full.names = TRUE, "*.dat")[3:6]
 #  
 #  dt <- lapply(flist, function(x) read.csv(x, header = TRUE, stringsAsFactors = FALSE))
@@ -28,6 +28,7 @@
 #  	axis.title.x = ggplot2::element_blank(),
 #  	axis.title.y = ggplot2::element_text(size=14),
 #  	plot.title = ggplot2::element_text(size=22),
+#  	legend.position = "none",
 #  	strip.background = ggplot2::element_rect(fill = 'white')))
 #  
 #  gg <- ggplot(dt, aes(x = datetime, y = speed, colour = site))
@@ -35,7 +36,14 @@
 #  gg <- gg + theme_opts + ggplot2::ylab("Speed") + viridis::scale_color_viridis(discrete = TRUE) + scale_x_datetime(date_breaks = "1 week", date_labels = "%m-%d")
 #  gg + facet_grid(site~.)
 #  
-
-## ---- echo=FALSE, results='asis'-----------------------------------------
-knitr::kable(head(mtcars, 10))
+#  gg <- ggplot(dt, aes(x = datetime, y = speed_raw, colour = site))
+#  gg <- gg + geom_line(alpha = 0.8)
+#  gg <- gg + theme_opts + ggplot2::ylab("Speed Raw") + viridis::scale_color_viridis(discrete = TRUE) + scale_x_datetime(date_breaks = "1 week", date_labels = "%m-%d")
+#  gg + facet_grid(site~.)
+#  
+#  gg <- ggplot(dt, aes(x = datetime, y = snr_mean, colour = site))
+#  gg <- gg + geom_line(alpha = 0.8)
+#  gg <- gg + theme_opts + ggplot2::ylab("3-probe average SNR") + viridis::scale_color_viridis(discrete = TRUE) + scale_x_datetime(date_breaks = "1 week", date_labels = "%m-%d")
+#  gg + facet_grid(site~.)
+#  
 
