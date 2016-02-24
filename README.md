@@ -1,12 +1,12 @@
-#ADV processing framework
-##Everglades Systems Assesment Group at the **South Florida Water Management District**
+# ADV processing framework
+## Everglades Systems Assesment Group at the **South Florida Water Management District**
 
-##Prerequisites
+## Prerequisites
 * `R`
 * `git`
 * `zoo` R package
 
-##Installation
+## Installation
 From the command line:
 
 `$ git clone git@gitlab.com:jsta/adv.git`
