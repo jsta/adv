@@ -8,5 +8,5 @@ Description: Process Acoustic Doppler Velocimeter Data
 Imports: zoo
 License: GPL
 RoxygenNote: 5.0.1
-Suggests: knitr
+Suggests: knitr,ggplot2,viridis
 VignetteBuilder: knitr

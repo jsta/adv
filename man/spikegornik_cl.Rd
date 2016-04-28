@@ -6,4 +6,12 @@
 \usage{
 spikegornik_cl(fpath, outpath)
 }
+\arguments{
+\item{fpath}{file.path to ADV output where the column of interest is named "Speed"}
+
+\item{outpath}{file.path to save results. optional.}
+}
+\description{
+Command-line interface to the spikegornik function
+}
 
