@@ -3,7 +3,7 @@ Title: Process Acoustic Doppler Velocimeter Data
 Version: 0.1
 Date: 2016-02-09
 Author: Joseph Stachelek
-Maintainer: Joseph Stachelek <jstachel@sfwmd.gov>
+Maintainer: Joseph Stachelek <stachel2@msu.edu>
 Description: Process Acoustic Doppler Velocimeter Data
 Imports: zoo
 License: GPL
